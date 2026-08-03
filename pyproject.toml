@@ -1,0 +1,19 @@
+[project]
+name = "inspect-simple-safety-tests"
+version = "0.1.0"
+description = "SimpleSafetyTests safety-refusal eval for Inspect"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "WatchTree-19" }]
+dependencies = ["inspect_ai>=0.3.100", "datasets>=2.16.0"]
+
+[project.entry-points.inspect_ai]
+inspect_simple_safety_tests = "inspect_simple_safety_tests"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/inspect_simple_safety_tests"]
