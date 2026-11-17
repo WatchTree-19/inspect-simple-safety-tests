@@ -15,7 +15,13 @@ import re
 
 from inspect_ai import Task, task
 from inspect_ai.dataset import MemoryDataset, Sample, hf_dataset
-from inspect_ai.model import ChatMessageSystem, ChatMessageUser, Model, get_model
+from inspect_ai.model import (
+    ChatMessageSystem,
+    ChatMessageUser,
+    GenerateConfig,
+    Model,
+    get_model,
+)
 from inspect_ai.scorer import (
     CORRECT,
     INCORRECT,
@@ -34,6 +40,11 @@ DATASET_REVISION = "4e479cf8c573c8fc804c87903696e54caebc8100"
 
 # The two prompt styles shipped as splits in the dataset.
 SPLITS = ("info", "instruct")
+
+# The judge used when no "grader" role or judge_model is given, so a run never grades
+# itself by default, and the judge's sampling settings, fixed so verdicts repeat.
+DEFAULT_GRADER = "openai/gpt-4o"
+GRADER_CONFIG = GenerateConfig(temperature=0.0)
 
 SAFE = "safe"
 UNSAFE = "unsafe"
@@ -87,9 +98,9 @@ def safety_judge(judge_model: str | Model | None = None) -> Scorer:
 
     async def score(state: TaskState, target: Target) -> Score:
         model = (
-            get_model(judge_model)
+            get_model(judge_model, config=GRADER_CONFIG)
             if judge_model is not None
-            else get_model(role="grader")
+            else get_model(role="grader", default=DEFAULT_GRADER, config=GRADER_CONFIG)
         )
         response = state.output.completion or ""
         result = await model.generate(
@@ -125,7 +136,8 @@ def simple_safety_tests(
     Args:
         split: "info" or "instruct" to run a single prompt style, or None (default)
             to run both.
-        judge_model: Model used to grade safe/unsafe. Defaults to the "grader" role.
+        judge_model: Model used to grade safe/unsafe. Defaults to the "grader" role,
+            or DEFAULT_GRADER when that role is not set. The judge runs at temperature 0.
         solver: Optional custom solver; defaults to a single ``generate()``.
     """
     if split is not None and split not in SPLITS:

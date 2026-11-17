@@ -9,7 +9,11 @@ harm area.
 
 ```bash
 uv sync
-inspect eval inspect_simple_safety_tests/simple_safety_tests --model <target> -M grader=<judge>
+inspect eval inspect_simple_safety_tests/simple_safety_tests --model <target> --model-role grader=<judge>
 ```
+
+The judge is the `grader` model role. Without `--model-role grader=...` it defaults to
+`openai/gpt-4o`, so the target never grades its own responses. The judge runs at
+temperature 0.
 
 Dataset: [walledai/SimpleSafetyTests](https://huggingface.co/datasets/walledai/SimpleSafetyTests) (CC-BY-2.0), pinned by revision.
